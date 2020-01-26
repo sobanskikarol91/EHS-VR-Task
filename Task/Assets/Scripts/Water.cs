@@ -9,24 +9,48 @@ public class Water : MonoBehaviour
     [SerializeField] float power = 2f;
     [SerializeField] float lifeTime = 2f;
 
-    ParticleSystem particles;
+    private ParticleSystem particles;
+
+    private bool isUsing;
+    private Vector3 startPosition;
+
 
     private void Awake()
     {
+        startPosition = transform.position;
         particles = GetComponent<ParticleSystem>();
     }
 
-    private void Update()
+    public void Use()
     {
-        lifeTime-= Time.deltaTime;
-
-        if (lifeTime <= 0)
-            StopExtinguisher();
+        if (isUsing)
+            Stop();
+        else
+            StartCoroutine(IEUse());
     }
 
-    private void StopExtinguisher()
+
+    IEnumerator IEUse()
     {
+        isUsing = true;
+        particles.Play();
+
+        while (lifeTime > 0)
+        {
+            lifeTime -= Time.deltaTime;
+
+            yield return null;
+        }
+
+        Stop();
+    }
+
+
+    private void Stop()
+    {
+        isUsing = false;
         particles.Stop();
+        StopAllCoroutines();
     }
 
     private void OnParticleCollision(GameObject other)
@@ -36,4 +60,6 @@ public class Water : MonoBehaviour
         if (fireable)
             fireable.DecreaseHealth(power);
     }
+
+
 }
